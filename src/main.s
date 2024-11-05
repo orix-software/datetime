@@ -253,7 +253,7 @@ typedef .struct ds1501
 
 		; Insère la date dans le buffer
 		lda	ds1501::date
-		jsr	bcd2str
+		jsr	byte2str
 		stx	buffer
 		sta	buffer+1
 
@@ -274,17 +274,17 @@ typedef .struct ds1501
 		cpy	#$02
 		bne	loop_month
 
-	;	jsr	bcd2str
+	;	jsr	byte2str
 	;	stx	buffer+3
 	;	sta	buffer+4
 
 		lda	ds1501::century
-		jsr	bcd2str
+		jsr	byte2str
 		stx	buffer+6+2
 		sta	buffer+7+2
 
 		lda	ds1501::year
-		jsr	bcd2str
+		jsr	byte2str
 		stx	buffer+8+2
 		sta	buffer+9+2
 
@@ -326,17 +326,17 @@ typedef .struct ds1501
 
 		; Insère l'heure dans le buffer
 		lda	ds1501::hour
-		jsr	bcd2str
+		jsr	byte2str
 		stx	buffer
 		sta	buffer+1
 
 		lda	ds1501::minutes
-		jsr	bcd2str
+		jsr	byte2str
 		stx	buffer+3
 		sta	buffer+4
 
 		lda	ds1501::seconds
-		jsr	bcd2str
+		jsr	byte2str
 		stx	buffer+6
 		sta	buffer+7
 
@@ -442,7 +442,50 @@ typedef .struct ds1501
 
 
 ;----------------------------------------------------------------------
-;	Conversion d'une valeur BCD <= en ASCII
+;	Conversion d'une valeur Binaire en ASCII
+;----------------------------------------------------------------------
+;
+; Entrée:
+;       - A: valeur BCD
+;
+; Sortie:
+;	- A: unités
+;	- X: dizaines
+;
+; Variables:
+;       Modifiées:
+;               -
+;
+;       Utilisées:
+;               -
+;
+; Sous-routines:
+;       -
+;----------------------------------------------------------------------
+.proc byte2str
+		pha
+
+		lsr
+		lsr
+		lsr
+		lsr
+		jsr	hex1
+		tax
+
+		pla
+		and	#$0f
+
+	hex1:
+		ora	#'0'
+		cmp	#'9'+1
+		bcc	end
+		adc	#$06
+	end:
+		rts
+.endproc
+
+;----------------------------------------------------------------------
+;	Conversion d'une valeur BCD en ASCII
 ;----------------------------------------------------------------------
 ;
 ; Entrée:
@@ -463,7 +506,7 @@ typedef .struct ds1501
 ;       -
 ;----------------------------------------------------------------------
 .proc bcd2str
-		cmp	#99+1
+		cmp	#$99+1
 		bcc	conv
 		rts
 
@@ -483,3 +526,4 @@ typedef .struct ds1501
 		clc
 		rts
 .endproc
+
