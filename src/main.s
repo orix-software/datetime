@@ -258,10 +258,26 @@ typedef .struct ds1501
 		sta	buffer+1
 
 		lda	ds1501::month
+		; Conversion BCD -> binaire simplifiée
 		cmp	#$10
 		bcc	*+4
 		sbc	#06
 
+		; Vérifie que le mois est < 13
+		cmp	#13
+		bcc	month
+
+		; Erreur numéro de mois incorrect,
+		; on affiche la valeur
+		lda	ds1501::month
+		jsr	byte2str
+		stx	buffer+3
+		sta	buffer+4
+		lda	#'?'
+		sta	buffer+5
+		bne	century
+
+	month:
 		asl
 		asl
 		tax
@@ -274,10 +290,7 @@ typedef .struct ds1501
 		cpy	#$02
 		bne	loop_month
 
-	;	jsr	byte2str
-	;	stx	buffer+3
-	;	sta	buffer+4
-
+	century:
 		lda	ds1501::century
 		jsr	byte2str
 		stx	buffer+6+2
